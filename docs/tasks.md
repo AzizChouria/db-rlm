@@ -56,9 +56,14 @@ agreed). Ordered by dependency, then priority.
 - [ ] Methodology section: official protocol, leakage discovery + fix,
       variance measurement (institutional-rigor story)
 
-## 6. Closing round (supervisor-deferred until modules validated)
+## 6. Scaling & closing round
 
+- [ ] **Full BIRD dev run (1,534 questions)** with the best validated config —
+      we have only ever evaluated on mini-dev (500). Full dev = the number
+      comparable to published papers. Budget note: ~3× the questions; run
+      after the reasoning-effort sweep picks the cheapest good setting
 - [ ] Unified token budgets across all configurations, final fair comparison
+      (supervisor-deferred until modules validated)
 
 ## Standing rules
 
@@ -68,3 +73,24 @@ agreed). Ordered by dependency, then priority.
 - Any single-run delta < ~2 points is within variance — validate on the
   197-question core + canary before spending a full run
 - Spec review with supervisor before implementing Stage 2/3
+
+
+## Onboarding checklist (do these first)
+
+1. Read `README.md`, then `docs/findings.md` (what's proven/dead — saves you
+   from re-running failed ideas), then this file
+2. Setup: `pip install -r requirements.txt`; copy `.env.example` → `.env`
+   (ask Aziz for the seminar API key); download BIRD mini-dev databases from
+   https://bird-bench.github.io → `data/raw/bird/minidev/MINIDEV/dev_databases/`
+3. Smoke test (~2 min, 10 questions):
+   `python scripts/run_bird_train_fewshot.py --limit 10 --output results/smoke.json`
+4. **No-API entry point**: the verifier and failure-analysis tasks work
+   entirely offline on the stored result files in `results/` — you can start
+   before any key/database setup:
+   - every result file has per-question `predicted_sql`, `predicted_answer`,
+     `gold_answer` — score things with `shared/evaluator.py`
+   - `data/processed/bird_cleancore_ids.json` = the hard-core /canary split
+     used for cheap intervention tests
+5. Conventions: work on branches (`name/topic`), PRs into `main`; every run
+   records model+config; deltas < ~2 points are run-variance — validate on
+   the core+canary subset before spending a full run
