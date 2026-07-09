@@ -99,6 +99,7 @@ class InDomainFewShotDBRLM(DBRLM):
         ]
 
         kwargs.setdefault("stop", _STOP_SEQUENCES)
+        self._transcript = messages  # live reference; grows as the loop runs
         last_exec_result = None
         repeat_count = 0
         last_was_empty = False
@@ -120,6 +121,7 @@ class InDomainFewShotDBRLM(DBRLM):
                     continue
                 answer = parse_response(response, repl_env)
                 if answer is not None:
+                    messages.append({"role": "assistant", "content": response})
                     return answer
 
             response_for_repl = re.sub(r'FINAL\s*\(.*?\)', '', response, flags=re.DOTALL).strip()
@@ -168,9 +170,15 @@ class InDomainFewShotDBRLM(DBRLM):
         raise MaxIterationsError("Max iterations exceeded")
 
 
-def run_one(example: dict, database_dir: Path, agent: InDomainFewShotDBRLM) -> dict:
+def run_one(example: dict, database_dir: Path, agent: InDomainFewShotDBRLM,
+            transcript_dir=None) -> dict:
     db_path = get_db_path(database_dir, example["db_id"])
     started = time.perf_counter()
+    # reset per-question accounting
+    agent._prompt_tokens = 0
+    agent._completion_tokens = 0
+    agent._reasoning_tokens = 0
+    agent._transcript = None
     predicted_sql = ""
     termination = "error"
     error_msg = None
@@ -218,8 +226,24 @@ def run_one(example: dict, database_dir: Path, agent: InDomainFewShotDBRLM) -> d
         "error": predicted_exec.get("error") or gold_exec.get("error"),
         "latency_seconds": round(time.perf_counter() - started, 4),
         "llm_calls": agent.stats["llm_calls"],
+        "model": agent.model,
+        "prompt_tokens": getattr(agent, "_prompt_tokens", 0),
+        "completion_tokens": getattr(agent, "_completion_tokens", 0),
+        "reasoning_tokens": getattr(agent, "_reasoning_tokens", 0),
         "termination": termination,
     }
+
+
+def save_transcript(example: dict, agent, transcript_dir) -> None:
+    """Append the question's full ReAct message history to a JSONL file."""
+    transcript = getattr(agent, "_transcript", None)
+    if not transcript_dir or transcript is None:
+        return
+    Path(transcript_dir).mkdir(parents=True, exist_ok=True)
+    rec = {"id": example["id"], "db_id": example["db_id"],
+           "question": example["question"], "messages": transcript}
+    with open(Path(transcript_dir) / "transcripts.jsonl", "a") as f:
+        f.write(json.dumps(rec, default=str) + "\n")
 
 
 def main():
@@ -237,6 +261,8 @@ def main():
                         help="gpt-5 family reasoning effort: minimal/low/medium/high")
     parser.add_argument("--no-fewshot", action="store_true",
                         help="disable retrieval few-shot (static prompt examples only)")
+    parser.add_argument("--transcript-dir", default=None,
+                        help="save full ReAct transcripts (JSONL) to this directory")
     parser.add_argument("--sleep",          type=float, default=0)
     args = parser.parse_args()
 
@@ -289,6 +315,7 @@ def main():
         agent._iterations = 0
         try:
             results.append(run_one(ex, Path(args.database_dir), agent))
+            save_transcript(ex, agent, args.transcript_dir)
         except KeyboardInterrupt:
             print(f"\nInterrupted — {len(results)} saved")
             output_path.write_text(json.dumps(results, indent=2))

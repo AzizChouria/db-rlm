@@ -67,6 +67,9 @@ class RLM:
 
         # Stats
         self._llm_calls = 0
+        self._prompt_tokens = 0
+        self._completion_tokens = 0
+        self._reasoning_tokens = 0
         self._iterations = 0
 
     def complete(
@@ -230,6 +233,14 @@ class RLM:
             litellm.acompletion(model=model, messages=messages, **call_kwargs),
             timeout=60,
         )
+
+        # Token accounting (reset per question by the runner)
+        usage = getattr(response, "usage", None)
+        if usage is not None:
+            self._prompt_tokens += getattr(usage, "prompt_tokens", 0) or 0
+            self._completion_tokens += getattr(usage, "completion_tokens", 0) or 0
+            details = getattr(usage, "completion_tokens_details", None)
+            self._reasoning_tokens += getattr(details, "reasoning_tokens", 0) or 0
 
         # Extract text
         return response.choices[0].message.content
