@@ -24,7 +24,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 load_dotenv(PROJECT_ROOT / ".env")
 
-from scripts.run_bird_indomain_fewshot import InDomainFewShotDBRLM, run_one
+from scripts.run_bird_indomain_fewshot import InDomainFewShotDBRLM, run_one, save_transcript
 from ours.train_few_shot_retriever import get_train_retriever
 
 BIRD_DB_DIR  = PROJECT_ROOT / "data/raw/bird/minidev/MINIDEV/dev_databases"
@@ -42,6 +42,7 @@ def main():
     parser.add_argument("--k",              type=int, default=3)
     parser.add_argument("--temperature",    type=float, default=0)
     parser.add_argument("--reasoning-effort", default=None)
+    parser.add_argument("--transcript-dir", default=None)
     args = parser.parse_args()
 
     questions = json.loads(Path(args.dataset).read_text())
@@ -84,6 +85,7 @@ def main():
         agent._iterations = 0
         try:
             results.append(run_one(ex, Path(args.database_dir), agent))
+            save_transcript(ex, agent, args.transcript_dir)
         except KeyboardInterrupt:
             print(f"\nInterrupted — {len(results)} saved")
             output_path.write_text(json.dumps(results, indent=2))

@@ -1,0 +1,4150 @@
+[
+  {
+    "id": "bird_1471",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What is the ratio of customers who pay in EUR against customers who pay in CZK?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT CAST(COUNT(CASE WHEN Currency = 'EUR' THEN 1 END) AS REAL) / COUNT(CASE WHEN Currency = 'CZK' THEN 1 END) FROM customers",
+    "predicted_answer": [
+      [
+        0.06572769953051644
+      ]
+    ],
+    "gold_sql": "SELECT CAST(SUM(IIF(Currency = 'EUR', 1, 0)) AS FLOAT) / SUM(IIF(Currency = 'CZK', 1, 0)) AS ratio FROM customers",
+    "gold_answer": [
+      [
+        0.06572769953051644
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 20.2294,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6403,
+    "completion_tokens": 2888,
+    "reasoning_tokens": 2670,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1472",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "In 2012, who had the least consumption in LAM?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT y.CustomerID FROM yearmonth AS y JOIN customers AS c ON y.CustomerID = c.CustomerID WHERE c.Segment = 'LAM' AND y.Date BETWEEN '201201' AND '201212' ORDER BY y.Consumption ASC LIMIT 1",
+    "predicted_answer": [
+      [
+        7653
+      ]
+    ],
+    "gold_sql": "SELECT T1.CustomerID FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Segment = 'LAM' AND SUBSTR(T2.Date, 1, 4) = '2012' GROUP BY T1.CustomerID ORDER BY SUM(T2.Consumption) ASC LIMIT 1",
+    "gold_answer": [
+      [
+        47273
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 32.8565,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6582,
+    "completion_tokens": 5816,
+    "reasoning_tokens": 5368,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1473",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What was the average monthly consumption of customers in SME for the year 2013?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT AVG(Y.Consumption) / 12 FROM yearmonth AS Y INNER JOIN customers AS C ON Y.CustomerID = C.CustomerID WHERE C.Segment = 'SME' AND Y.Date BETWEEN '201301' AND '201312'",
+    "predicted_answer": [
+      [
+        459.9562642870894
+      ]
+    ],
+    "gold_sql": "SELECT AVG(T2.Consumption) / 12 FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE SUBSTR(T2.Date, 1, 4) = '2013' AND T1.Segment = 'SME'",
+    "gold_answer": [
+      [
+        459.9562642870894
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 14.7952,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6686,
+    "completion_tokens": 2320,
+    "reasoning_tokens": 1937,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1476",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What was the difference in gas consumption between CZK-paying customers and EUR-paying customers in 2012?",
+    "difficulty": "challenging",
+    "predicted_sql": "SELECT SUM(CASE WHEN c.Currency = 'CZK' THEN y.Consumption ELSE 0 END) - SUM(CASE WHEN c.Currency = 'EUR' THEN y.Consumption ELSE 0 END) FROM yearmonth AS y JOIN customers AS c ON y.CustomerID = c.CustomerID WHERE y.Date BETWEEN '201201' AND '201212' AND c.Currency IN ('CZK', 'EUR')",
+    "predicted_answer": [
+      [
+        402524570.17
+      ]
+    ],
+    "gold_sql": "SELECT SUM(IIF(T1.Currency = 'CZK', T2.Consumption, 0)) - SUM(IIF(T1.Currency = 'EUR', T2.Consumption, 0)) FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE SUBSTR(T2.Date, 1, 4) = '2012'",
+    "gold_answer": [
+      [
+        402524570.17
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 22.3944,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 7339,
+    "completion_tokens": 3466,
+    "reasoning_tokens": 2785,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1479",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "Which year recorded the most consumption of gas paid in CZK?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT SUBSTR(y.Date, 1, 4) FROM yearmonth AS y JOIN customers AS c ON y.CustomerID = c.CustomerID WHERE c.Currency = 'CZK' GROUP BY SUBSTR(y.Date, 1, 4) ORDER BY SUM(y.Consumption) DESC LIMIT 1",
+    "predicted_answer": [
+      [
+        "2013"
+      ]
+    ],
+    "gold_sql": "SELECT SUBSTR(T2.Date, 1, 4) FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Currency = 'CZK' GROUP BY SUBSTR(T2.Date, 1, 4) ORDER BY SUM(T2.Consumption) DESC LIMIT 1",
+    "gold_answer": [
+      [
+        "2013"
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 17.8851,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6915,
+    "completion_tokens": 2718,
+    "reasoning_tokens": 2271,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1480",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What was the gas consumption peak month for SME customers in 2013?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT substr(y.Date, 5, 2) FROM yearmonth AS y INNER JOIN customers AS c ON y.CustomerID = c.CustomerID WHERE c.Segment = 'SME' AND y.Date BETWEEN '201301' AND '201312' GROUP BY substr(y.Date, 5, 2) ORDER BY SUM(y.Consumption) DESC LIMIT 1",
+    "predicted_answer": [
+      [
+        "04"
+      ]
+    ],
+    "gold_sql": "SELECT SUBSTR(T2.Date, 5, 2) FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE SUBSTR(T2.Date, 1, 4) = '2013' AND T1.Segment = 'SME' GROUP BY SUBSTR(T2.Date, 5, 2) ORDER BY SUM(T2.Consumption) DESC LIMIT 1",
+    "gold_answer": [
+      [
+        "04"
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 24.7899,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6820,
+    "completion_tokens": 4113,
+    "reasoning_tokens": 3603,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1481",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What is the difference in the annual average consumption of the customers with the least amount of consumption paid in CZK for 2013 between SME and LAM, LAM and KAM, and KAM and SME?",
+    "difficulty": "challenging",
+    "predicted_sql": "WITH yearly AS ( SELECT c.Segment, ym.CustomerID, SUM(ym.Consumption) AS total_consumption FROM yearmonth AS ym JOIN customers AS c ON ym.CustomerID = c.CustomerID WHERE c.Currency = 'CZK' AND ym.Date BETWEEN '201301' AND '201312' GROUP BY c.Segment, ym.CustomerID ), min_by_seg AS ( SELECT Segment, MIN(total_consumption) AS min_consumption FROM yearly GROUP BY Segment ), seg_avg AS ( SELECT y.Segment, AVG(y.total_consumption) AS annual_avg FROM yearly AS y JOIN min_by_seg AS m ON y.Segment = m.Segment AND y.total_consumption = m.min_consumption GROUP BY y.Segment ) SELECT (SELECT annual_avg FROM seg_avg WHERE Segment = 'SME') - (SELECT annual_avg FROM seg_avg WHERE Segment = 'LAM'), (SELECT annual_avg FROM seg_avg WHERE Segment = 'LAM') - (SELECT annual_avg FROM seg_avg WHERE Segment = 'KAM'), (SELECT annual_avg FROM seg_avg WHERE Segment = 'KAM') - (SELECT annual_avg FROM seg_avg WHERE Segment = 'SME');",
+    "predicted_answer": [
+      [
+        -14009.339999999998,
+        6046.619999999999,
+        7962.719999999999
+      ]
+    ],
+    "gold_sql": "SELECT CAST(SUM(IIF(T1.Segment = 'SME', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) - CAST(SUM(IIF(T1.Segment = 'LAM', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) , CAST(SUM(IIF(T1.Segment = 'LAM', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) - CAST(SUM(IIF(T1.Segment = 'KAM', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) , CAST(SUM(IIF(T1.Segment = 'KAM', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) - CAST(SUM(IIF(T1.Segment = 'SME', T2.Consumption, 0)) AS REAL) / COUNT(T1.CustomerID) FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Currency = 'CZK' AND T2.Consumption = ( SELECT MIN(Consumption) FROM yearmonth ) AND T2.Date BETWEEN 201301 AND 201312",
+    "gold_answer": [
+      [
+        0.0,
+        582092.86,
+        -582092.86
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 49.8045,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 8335,
+    "completion_tokens": 10326,
+    "reasoning_tokens": 8850,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1482",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "Which of the three segments\u2014SME, LAM and KAM\u2014has the biggest and lowest percentage increases in consumption paid in EUR between 2012 and 2013?",
+    "difficulty": "challenging",
+    "predicted_sql": "WITH seg AS ( SELECT c.Segment, SUM(CASE WHEN substr(y.Date, 1, 4) = '2013' THEN y.Consumption ELSE 0 END) AS c2013, SUM(CASE WHEN substr(y.Date, 1, 4) = '2012' THEN y.Consumption ELSE 0 END) AS c2012 FROM customers c JOIN yearmonth y ON c.CustomerID = y.CustomerID WHERE c.Currency = 'EUR' AND c.Segment IN ('SME', 'LAM', 'KAM') AND substr(y.Date, 1, 4) IN ('2012', '2013') GROUP BY c.Segment ), pct AS ( SELECT Segment, (c2013 - c2012) * 100.0 / NULLIF(c2013, 0) AS pct FROM seg ) SELECT (SELECT Segment FROM pct ORDER BY pct DESC, Segment LIMIT 1) AS biggest, (SELECT Segment FROM pct ORDER BY pct ASC, Segment LIMIT 1) AS lowest;",
+    "predicted_answer": [
+      [
+        "SME",
+        "LAM"
+      ]
+    ],
+    "gold_sql": "SELECT CAST((SUM(IIF(T1.Segment = 'SME' AND T2.Date LIKE '2013%', T2.Consumption, 0)) - SUM(IIF(T1.Segment = 'SME' AND T2.Date LIKE '2012%', T2.Consumption, 0))) AS FLOAT) * 100 / SUM(IIF(T1.Segment = 'SME' AND T2.Date LIKE '2012%', T2.Consumption, 0)), CAST(SUM(IIF(T1.Segment = 'LAM' AND T2.Date LIKE '2013%', T2.Consumption, 0)) - SUM(IIF(T1.Segment = 'LAM' AND T2.Date LIKE '2012%', T2.Consumption, 0)) AS FLOAT) * 100 / SUM(IIF(T1.Segment = 'LAM' AND T2.Date LIKE '2012%', T2.Consumption, 0)) , CAST(SUM(IIF(T1.Segment = 'KAM' AND T2.Date LIKE '2013%', T2.Consumption, 0)) - SUM(IIF(T1.Segment = 'KAM' AND T2.Date LIKE '2012%', T2.Consumption, 0)) AS FLOAT) * 100 / SUM(IIF(T1.Segment = 'KAM' AND T2.Date LIKE '2012%', T2.Consumption, 0)) FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID",
+    "gold_answer": [
+      [
+        545.4018999790969,
+        681.5824574939339,
+        708.1124062978664
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 74.0688,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 8067,
+    "completion_tokens": 13814,
+    "reasoning_tokens": 12387,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1483",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "How much did customer 6 consume in total between August and November 2013?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT SUM(Consumption) FROM yearmonth WHERE CustomerID = 6 AND Date BETWEEN '201308' AND '201311'",
+    "predicted_answer": [
+      [
+        1224.96
+      ]
+    ],
+    "gold_sql": "SELECT SUM(Consumption) FROM yearmonth WHERE CustomerID = 6 AND Date BETWEEN '201308' AND '201311'",
+    "gold_answer": [
+      [
+        1224.96
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 10.162,
+    "llm_calls": 2,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 4144,
+    "completion_tokens": 1510,
+    "reasoning_tokens": 1364,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1484",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "How many more \"discount\" gas stations does the Czech Republic have compared to Slovakia?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT SUM(CASE WHEN Country = 'CZE' AND Segment = 'Discount' THEN 1 ELSE 0 END) - SUM(CASE WHEN Country = 'SVK' AND Segment = 'Discount' THEN 1 ELSE 0 END) FROM gasstations",
+    "predicted_answer": [
+      [
+        176
+      ]
+    ],
+    "gold_sql": "SELECT SUM(IIF(Country = 'CZE', 1, 0)) - SUM(IIF(Country = 'SVK', 1, 0)) FROM gasstations WHERE Segment = 'Discount'",
+    "gold_answer": [
+      [
+        176
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 15.7189,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6678,
+    "completion_tokens": 2292,
+    "reasoning_tokens": 1913,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1486",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "Is it true that more SMEs pay in Czech koruna than in euros? If so, how many more?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT IIF(COUNT(CASE WHEN Currency='CZK' THEN 1 END) > COUNT(CASE WHEN Currency='EUR' THEN 1 END), 'YES', 'NO'), COUNT(CASE WHEN Currency='CZK' THEN 1 END) - COUNT(CASE WHEN Currency='EUR' THEN 1 END) FROM customers WHERE Segment='SME';",
+    "predicted_answer": [
+      [
+        "YES",
+        23505
+      ]
+    ],
+    "gold_sql": "SELECT SUM(Currency = 'CZK') - SUM(Currency = 'EUR') FROM customers WHERE Segment = 'SME'",
+    "gold_answer": [
+      [
+        23505
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 38.1272,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6599,
+    "completion_tokens": 6889,
+    "reasoning_tokens": 6492,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1490",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "How many percent of LAM customer consumed more than 46.73?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT CAST(COUNT(DISTINCT CASE WHEN y.Consumption > 46.73 THEN c.CustomerID END) AS REAL) * 100.0 / COUNT(DISTINCT c.CustomerID) FROM customers c LEFT JOIN yearmonth y ON c.CustomerID = y.CustomerID WHERE c.Segment = 'LAM'",
+    "predicted_answer": [
+      [
+        98.25041006014216
+      ]
+    ],
+    "gold_sql": "SELECT CAST(SUM(IIF(T2.Consumption > 46.73, 1, 0)) AS FLOAT) * 100 / COUNT(T1.CustomerID) FROM customers AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Segment = 'LAM'",
+    "gold_answer": [
+      [
+        98.5267932135058
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 36.3879,
+    "llm_calls": 2,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 4678,
+    "completion_tokens": 6542,
+    "reasoning_tokens": 6076,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1493",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "In February 2012, what percentage of customers consumed more than 528.3?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT CAST(SUM(CASE WHEN Consumption > 528.3 THEN 1 ELSE 0 END) AS REAL) * 100 / COUNT(*) FROM yearmonth WHERE Date = '201202'",
+    "predicted_answer": [
+      [
+        66.62300807683911
+      ]
+    ],
+    "gold_sql": "SELECT CAST(SUM(IIF(Consumption > 528.3, 1, 0)) AS FLOAT) * 100 / COUNT(CustomerID) FROM yearmonth WHERE Date = '201202'",
+    "gold_answer": [
+      [
+        66.62300807683911
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 15.0491,
+    "llm_calls": 2,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 4266,
+    "completion_tokens": 2384,
+    "reasoning_tokens": 2204,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1498",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What is the highest monthly consumption in the year 2012?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT Consumption FROM yearmonth WHERE substr(Date, 1, 4) = '2012' ORDER BY Consumption DESC LIMIT 1",
+    "predicted_answer": [
+      [
+        445279.69
+      ]
+    ],
+    "gold_sql": "SELECT SUM(Consumption) FROM yearmonth WHERE SUBSTR(Date, 1, 4) = '2012' GROUP BY SUBSTR(Date, 5, 2) ORDER BY SUM(Consumption) DESC LIMIT 1",
+    "gold_answer": [
+      [
+        51787161.74
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 23.5518,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6355,
+    "completion_tokens": 3079,
+    "reasoning_tokens": 2777,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1500",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "Please list the product description of the products consumed in September, 2013.",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT DISTINCT p.Description FROM yearmonth AS y JOIN transactions_1k AS t ON y.CustomerID = t.CustomerID JOIN products AS p ON t.ProductID = p.ProductID WHERE y.Date = '201309' ORDER BY p.Description",
+    "predicted_answer": [
+      [
+        "Additivum"
+      ],
+      [
+        "Autokosmet."
+      ],
+      [
+        "Autokozmetik"
+      ],
+      [
+        "Autopr\u00edslu\u0161."
+      ],
+      [
+        "Dalnic.popl."
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Diesel aditiv"
+      ],
+      [
+        "Knihy,nov."
+      ],
+      [
+        "LPG"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural +"
+      ],
+      [
+        "Natural Plus"
+      ],
+      [
+        "Natural Spec"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Obcerstven\u00ed"
+      ],
+      [
+        "Oleje,tuky"
+      ],
+      [
+        "Potraviny"
+      ],
+      [
+        "Prev.n\u00e1plne"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Um\u00fdvanie voz"
+      ],
+      [
+        "Zbo\u017e\u00ed nesp."
+      ],
+      [
+        "Zpr.nakupu"
+      ]
+    ],
+    "gold_sql": "SELECT T3.Description FROM transactions_1k AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID INNER JOIN products AS T3 ON T1.ProductID = T3.ProductID WHERE T2.Date = '201309'",
+    "gold_answer": [
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Oleje,tuky"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "LPG"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Autokosmet."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Potraviny"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Autokosmet."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Prev.n\u00e1plne"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel aditiv"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Um\u00fdvanie voz"
+      ],
+      [
+        "Prev.n\u00e1plne"
+      ],
+      [
+        "Um\u00fdvanie voz"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel aditiv"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Um\u00fdvanie voz"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Autokozmetik"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Um\u00fdvanie voz"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural Spec"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Zpr.nakupu"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Autopr\u00edslu\u0161."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Oleje,tuky"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural +"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel aditiv"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Prev.n\u00e1plne"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Zpr.nakupu"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Autopr\u00edslu\u0161."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Dalnic.popl."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Autopr\u00edslu\u0161."
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Oleje,tuky"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "LPG"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Knihy,nov."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Potraviny"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Zbo\u017e\u00ed nesp."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Autopr\u00edslu\u0161."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Obcerstven\u00ed"
+      ],
+      [
+        "Zbo\u017e\u00ed nesp."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Zpr.nakupu"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Autokosmet."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Oleje,tuky"
+      ],
+      [
+        "Additivum"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Autokosmet."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Oleje,tuky"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Dalnic.popl."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural Spec"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural Plus"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Autokosmet."
+      ],
+      [
+        "Autopr\u00edslu\u0161."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Natural Spec"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural Spec"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Oleje,tuky"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Autopr\u00edslu\u0161."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Autokosmet."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Potraviny"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural Plus"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Potraviny"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "LPG"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Dalnic.popl."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural Plus"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "LPG"
+      ],
+      [
+        "Obcerstven\u00ed"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Zpr.nakupu"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural Plus"
+      ],
+      [
+        "Nat.Super"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Diesel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Dalnic.popl."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Natural Plus"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Autokosmet."
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta"
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 247.3945,
+    "llm_calls": 10,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 22195,
+    "completion_tokens": 33332,
+    "reasoning_tokens": 31785,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1501",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "Please list the countries of the gas stations with transactions taken place in June, 2013.",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT DISTINCT g.Country FROM yearmonth y JOIN transactions_1k t ON y.CustomerID = t.CustomerID JOIN gasstations g ON t.GasStationID = g.GasStationID WHERE y.Date = '201306'",
+    "predicted_answer": [
+      [
+        "CZE"
+      ],
+      [
+        "SVK"
+      ]
+    ],
+    "gold_sql": "SELECT DISTINCT T2.Country FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID INNER JOIN yearmonth AS T3 ON T1.CustomerID = T3.CustomerID WHERE T3.Date = '201306'",
+    "gold_answer": [
+      [
+        "CZE"
+      ],
+      [
+        "SVK"
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 68.8018,
+    "llm_calls": 7,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 17851,
+    "completion_tokens": 11448,
+    "reasoning_tokens": 10473,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1505",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "Among the customers who paid in euro, how many of them have a monthly consumption of over 1000?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT COUNT(DISTINCT y.CustomerID) FROM customers AS c INNER JOIN yearmonth AS y ON c.CustomerID = y.CustomerID WHERE c.Currency = 'EUR' AND y.Consumption > 1000",
+    "predicted_answer": [
+      [
+        391
+      ]
+    ],
+    "gold_sql": "SELECT COUNT(*) FROM yearmonth AS T1 INNER JOIN customers AS T2 ON T1.CustomerID = T2.CustomerID WHERE T2.Currency = 'EUR' AND T1.Consumption > 1000.00",
+    "gold_answer": [
+      [
+        2730
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 6.5199,
+    "llm_calls": 2,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 4176,
+    "completion_tokens": 817,
+    "reasoning_tokens": 636,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1506",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "Please list the product descriptions of the transactions taken place in the gas stations in the Czech Republic.",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT DISTINCT p.Description FROM transactions_1k t JOIN gasstations g ON t.GasStationID = g.GasStationID JOIN products p ON t.ProductID = p.ProductID WHERE g.Country = 'CZE' ORDER BY p.Description",
+    "predicted_answer": [
+      [
+        "Additivum"
+      ],
+      [
+        "Autokosmet."
+      ],
+      [
+        "Autopr\u00edslu\u0161."
+      ],
+      [
+        "Dalnic.popl."
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "Knihy,nov."
+      ],
+      [
+        "LPG"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Nafta"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Natural +"
+      ],
+      [
+        "Natural Plus"
+      ],
+      [
+        "Natural Spec"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Obcerstven\u00ed"
+      ],
+      [
+        "Oleje,tuky"
+      ],
+      [
+        "Potraviny"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Zbo\u017e\u00ed nesp."
+      ],
+      [
+        "Zpr.nakupu"
+      ]
+    ],
+    "gold_sql": "SELECT DISTINCT T3.Description FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID INNER JOIN products AS T3 ON T1.ProductID = T3.ProductID WHERE T2.Country = 'CZE'",
+    "gold_answer": [
+      [
+        "Nafta"
+      ],
+      [
+        "Provoz.n\u00e1pl."
+      ],
+      [
+        "Natural"
+      ],
+      [
+        "Nemrz.kapal."
+      ],
+      [
+        "Oleje,tuky"
+      ],
+      [
+        "Diesel +"
+      ],
+      [
+        "LPG"
+      ],
+      [
+        "Myt\u00ed vozidel"
+      ],
+      [
+        "Autokosmet."
+      ],
+      [
+        "Potraviny"
+      ],
+      [
+        "Nafta Plus"
+      ],
+      [
+        "Natural Spec"
+      ],
+      [
+        "Zpr.nakupu"
+      ],
+      [
+        "Autopr\u00edslu\u0161."
+      ],
+      [
+        "Natural +"
+      ],
+      [
+        "Dalnic.popl."
+      ],
+      [
+        "Knihy,nov."
+      ],
+      [
+        "Zbo\u017e\u00ed nesp."
+      ],
+      [
+        "Obcerstven\u00ed"
+      ],
+      [
+        "Additivum"
+      ],
+      [
+        "Natural Plus"
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 10.7036,
+    "llm_calls": 2,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 4132,
+    "completion_tokens": 1600,
+    "reasoning_tokens": 1316,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1507",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "Please list the disparate time of the transactions taken place in the gas stations from chain no. 11.",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT DISTINCT T1.Time FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID WHERE T2.ChainID = 11 ORDER BY T1.Time",
+    "predicted_answer": [
+      [
+        "11:55:00"
+      ],
+      [
+        "14:29:00"
+      ]
+    ],
+    "gold_sql": "SELECT DISTINCT T1.Time FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID WHERE T2.ChainID = 11",
+    "gold_answer": [
+      [
+        "14:29:00"
+      ],
+      [
+        "11:55:00"
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 12.1028,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6583,
+    "completion_tokens": 1700,
+    "reasoning_tokens": 1333,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1509",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "Among the transactions made in the gas stations in the Czech Republic, how many of them are taken place after 2012/1/1?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT COUNT(*) FROM transactions_1k AS t INNER JOIN gasstations AS g ON t.GasStationID = g.GasStationID WHERE g.Country = 'CZE' AND t.Date > '2012-01-01'",
+    "predicted_answer": [
+      [
+        933
+      ]
+    ],
+    "gold_sql": "SELECT COUNT(T1.TransactionID) FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID WHERE T2.Country = 'CZE' AND STRFTIME('%Y', T1.Date) >= '2012'",
+    "gold_answer": [
+      [
+        933
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 18.947,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 7037,
+    "completion_tokens": 2965,
+    "reasoning_tokens": 2494,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1514",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What kind of currency did the customer paid at 16:25:00 in 2012/8/24?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT DISTINCT c.Currency FROM transactions_1k AS t INNER JOIN customers AS c ON t.CustomerID = c.CustomerID WHERE t.Date = '2012-08-24' AND t.Time = '16:25:00'",
+    "predicted_answer": [
+      [
+        "CZK"
+      ]
+    ],
+    "gold_sql": "SELECT DISTINCT T3.Currency FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID INNER JOIN customers AS T3 ON T1.CustomerID = T3.CustomerID WHERE T1.Date = '2012-08-24' AND T1.Time = '16:25:00'",
+    "gold_answer": [
+      [
+        "CZK"
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 25.3818,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6461,
+    "completion_tokens": 3899,
+    "reasoning_tokens": 3536,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1515",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What segment did the customer have at 2012/8/23 21:20:00?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT c.Segment FROM transactions_1k AS t JOIN customers AS c ON t.CustomerID = c.CustomerID WHERE t.Date = '2012-08-23' AND t.Time = '21:20:00'",
+    "predicted_answer": [
+      [
+        "KAM"
+      ]
+    ],
+    "gold_sql": "SELECT T2.Segment FROM transactions_1k AS T1 INNER JOIN customers AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.date = '2012-08-23' AND T1.time = '21:20:00'",
+    "gold_answer": [
+      [
+        "KAM"
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 10.2387,
+    "llm_calls": 4,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 9297,
+    "completion_tokens": 1338,
+    "reasoning_tokens": 1031,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1521",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "For all the transactions happened during 8:00-9:00 in 2012/8/26, how many happened in CZE?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT COUNT(*) FROM transactions_1k AS t INNER JOIN gasstations AS g ON t.GasStationID = g.GasStationID WHERE t.Date = '2012-08-26' AND t.Time BETWEEN '08:00:00' AND '09:00:00' AND g.Country = 'CZE'",
+    "predicted_answer": [
+      [
+        14
+      ]
+    ],
+    "gold_sql": "SELECT COUNT(T1.TransactionID) FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID WHERE T1.Date = '2012-08-26' AND T1.Time BETWEEN '08:00:00' AND '09:00:00' AND T2.Country = 'CZE'",
+    "gold_answer": [
+      [
+        14
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 19.1452,
+    "llm_calls": 2,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 4736,
+    "completion_tokens": 3481,
+    "reasoning_tokens": 3111,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1524",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What's the nationality of the customer who spent 548.4 in 2012/8/24?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT DISTINCT T2.Currency FROM transactions_1k AS T1 INNER JOIN customers AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Date = '2012-08-24' AND T1.Price = 548.4",
+    "predicted_answer": [
+      [
+        "CZK"
+      ]
+    ],
+    "gold_sql": "SELECT T2.Country FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID WHERE T1.Date = '2012-08-24' AND T1.Price  = 548.4",
+    "gold_answer": [
+      [
+        "CZE"
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 30.2053,
+    "llm_calls": 2,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 4404,
+    "completion_tokens": 5136,
+    "reasoning_tokens": 4659,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1525",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What is the percentage of the customers who used EUR in 2012/8/25?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT COUNT(DISTINCT CASE WHEN c.Currency = 'EUR' THEN c.CustomerID END) * 100.0 / COUNT(DISTINCT c.CustomerID) FROM customers c JOIN transactions_1k t ON c.CustomerID = t.CustomerID WHERE t.Date = '2012-08-25'",
+    "predicted_answer": [
+      [
+        2.7027027027027026
+      ]
+    ],
+    "gold_sql": "SELECT CAST(SUM(IIF(T2.Currency = 'EUR', 1, 0)) AS FLOAT) * 100 / COUNT(T1.CustomerID) FROM transactions_1k AS T1 INNER JOIN customers AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Date = '2012-08-25'",
+    "gold_answer": [
+      [
+        1.6470588235294117
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 32.4693,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6767,
+    "completion_tokens": 5538,
+    "reasoning_tokens": 5127,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1526",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "For the customer who paid 634.8 in 2012/8/25, what was the consumption decrease rate from Year 2012 to 2013?",
+    "difficulty": "challenging",
+    "predicted_sql": "WITH target_customer AS (SELECT DISTINCT CustomerID FROM transactions_1k WHERE Date = '2012-08-25' AND Price = 634.8) SELECT (SUM(CASE WHEN substr(Date, 1, 4) = '2012' THEN Consumption ELSE 0 END) - SUM(CASE WHEN substr(Date, 1, 4) = '2013' THEN Consumption ELSE 0 END)) * 1.0 / SUM(CASE WHEN substr(Date, 1, 4) = '2012' THEN Consumption ELSE 0 END) FROM yearmonth WHERE CustomerID = (SELECT CustomerID FROM target_customer)",
+    "predicted_answer": [
+      [
+        -5.815242674672346
+      ]
+    ],
+    "gold_sql": "SELECT CAST(SUM(IIF(SUBSTRING(Date, 1, 4) = '2012', Consumption, 0)) - SUM(IIF(SUBSTRING(Date, 1, 4) = '2013', Consumption, 0)) AS FLOAT) / SUM(IIF(SUBSTRING(Date, 1, 4) = '2012', Consumption, 0)) FROM yearmonth WHERE CustomerID = ( SELECT T1.CustomerID FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID WHERE T1.Date = '2012-08-25' AND T1.Price  = 1513.12 )",
+    "gold_answer": [
+      [
+        null
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 44.3371,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 7597,
+    "completion_tokens": 7883,
+    "reasoning_tokens": 6966,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1528",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What is the percentage of \"premium\" against the overall segment in Country = \"SVK\"?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT CAST(SUM(IIF(Segment = 'Premium', 1, 0)) AS REAL) * 100.0 / COUNT(*) FROM gasstations WHERE Country = 'SVK'",
+    "predicted_answer": [
+      [
+        35.68181818181818
+      ]
+    ],
+    "gold_sql": "SELECT CAST(SUM(IIF(Country = 'SVK' AND Segment = 'Premium', 1, 0)) AS FLOAT) * 100 / SUM(IIF(Country = 'SVK', 1, 0)) FROM gasstations",
+    "gold_answer": [
+      [
+        35.68181818181818
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 12.8871,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6544,
+    "completion_tokens": 1806,
+    "reasoning_tokens": 1425,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1529",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "What is the amount spent by customer \"38508\" at the gas stations? How much had the customer spent in January 2012?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT (SELECT SUM(Price) FROM transactions_1k WHERE CustomerID = 38508), (SELECT Consumption FROM yearmonth WHERE CustomerID = 38508 AND Date = '201201')",
+    "predicted_answer": [
+      [
+        3437.01,
+        67156.94
+      ]
+    ],
+    "gold_sql": "SELECT SUM(T1.Price ) , SUM(IIF(T3.Date = '201201', T1.Price, 0)) FROM transactions_1k AS T1 INNER JOIN gasstations AS T2 ON T1.GasStationID = T2.GasStationID INNER JOIN yearmonth AS T3 ON T1.CustomerID = T3.CustomerID WHERE T1.CustomerID = '38508'",
+    "gold_answer": [
+      [
+        68740.2,
+        3437.01
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 36.3294,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 6665,
+    "completion_tokens": 5790,
+    "reasoning_tokens": 5417,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1531",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "Who is the top spending customer and how much is the average price per single item purchased by this customer? What currency was being used?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT t.CustomerID, SUM(t.Price) * 1.0 / SUM(t.Amount) AS avg_price_per_single_item, c.Currency FROM transactions_1k AS t JOIN customers AS c ON t.CustomerID = c.CustomerID GROUP BY t.CustomerID, c.Currency ORDER BY SUM(t.Price) DESC LIMIT 1;",
+    "predicted_answer": [
+      [
+        19182,
+        24.277577464788735,
+        "CZK"
+      ]
+    ],
+    "gold_sql": "SELECT T2.CustomerID, SUM(T2.Price / T2.Amount), T1.Currency FROM customers AS T1 INNER JOIN transactions_1k AS T2 ON T1.CustomerID = T2.CustomerID WHERE T2.CustomerID = ( SELECT CustomerID FROM yearmonth ORDER BY Consumption DESC LIMIT 1 ) GROUP BY T2.CustomerID, T1.Currency",
+    "gold_answer": [
+      [
+        12459,
+        203.8560787354258,
+        "CZK"
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 21.4131,
+    "llm_calls": 2,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 4468,
+    "completion_tokens": 3680,
+    "reasoning_tokens": 3311,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1533",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "debit_card_specializing",
+    "question": "For all the people who paid more than 29.00 per unit of product id No.5. Give their consumption status in the August of 2012.",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT DISTINCT Y.Consumption FROM yearmonth AS Y WHERE Y.Date = '201208' AND Y.CustomerID IN (SELECT DISTINCT CustomerID FROM transactions_1k WHERE ProductID = 5 AND Price * 1.0 / Amount > 29.00)",
+    "predicted_answer": [
+      [
+        88265.39
+      ],
+      [
+        126157.7
+      ],
+      [
+        45937.22
+      ],
+      [
+        1903.2
+      ],
+      [
+        58.19
+      ],
+      [
+        8878.07
+      ],
+      [
+        69331.72
+      ],
+      [
+        1142.95
+      ],
+      [
+        1129.2
+      ]
+    ],
+    "gold_sql": "SELECT T2.Consumption FROM transactions_1k AS T1 INNER JOIN yearmonth AS T2 ON T1.CustomerID = T2.CustomerID WHERE T1.Price / T1.Amount > 29.00 AND T1.ProductID = 5 AND T2.Date = '201208'",
+    "gold_answer": [
+      [
+        1903.2
+      ],
+      [
+        88265.39
+      ],
+      [
+        1129.2
+      ],
+      [
+        126157.7
+      ],
+      [
+        126157.7
+      ],
+      [
+        58.19
+      ],
+      [
+        1142.95
+      ],
+      [
+        8878.07
+      ],
+      [
+        69331.72
+      ],
+      [
+        45937.22
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 29.7941,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 7398,
+    "completion_tokens": 5373,
+    "reasoning_tokens": 4794,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1312",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "student_club",
+    "question": "What's Angela Sanders's major?",
+    "difficulty": "simple",
+    "predicted_sql": "SELECT ma.major_name FROM member AS m INNER JOIN major AS ma ON m.link_to_major = ma.major_id WHERE m.first_name = 'Angela' AND m.last_name = 'Sanders'",
+    "predicted_answer": [
+      [
+        "Business"
+      ]
+    ],
+    "gold_sql": "SELECT T2.major_name FROM member AS T1 INNER JOIN major AS T2 ON T1.link_to_major = T2.major_id WHERE T1.first_name = 'Angela' AND T1.last_name = 'Sanders'",
+    "gold_answer": [
+      [
+        "Business"
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 26.6212,
+    "llm_calls": 2,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 5316,
+    "completion_tokens": 3578,
+    "reasoning_tokens": 3384,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1317",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "student_club",
+    "question": "Among the students from the Student_Club who attended the event \"Women's Soccer\", how many of them want a T-shirt that's in medium size?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT COUNT(DISTINCT a.link_to_member) FROM attendance a JOIN event e ON a.link_to_event = e.event_id JOIN member m ON a.link_to_member = m.member_id WHERE e.event_name = 'Women''s Soccer' AND m.t_shirt_size = 'Medium'",
+    "predicted_answer": [
+      [
+        7
+      ]
+    ],
+    "gold_sql": "SELECT COUNT(T1.event_id) FROM event AS T1 INNER JOIN attendance AS T2 ON T1.event_id = T2.link_to_event INNER JOIN member AS T3 ON T2.link_to_member = T3.member_id WHERE T1.event_name = 'Women''s Soccer' AND T3.t_shirt_size = 'Medium'",
+    "gold_answer": [
+      [
+        7
+      ]
+    ],
+    "correct": true,
+    "error": null,
+    "latency_seconds": 26.9913,
+    "llm_calls": 3,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 8584,
+    "completion_tokens": 3674,
+    "reasoning_tokens": 3211,
+    "termination": "final"
+  },
+  {
+    "id": "bird_1322",
+    "method": "bird_indomain_fewshot_db_rlm",
+    "db_id": "student_club",
+    "question": "Among the events attended by more than 10 members of the Student_Club, how many of them are meetings?",
+    "difficulty": "moderate",
+    "predicted_sql": "SELECT COUNT(*) FROM (SELECT e.event_id FROM event e JOIN attendance a ON e.event_id = a.link_to_event GROUP BY e.event_id HAVING COUNT(*) > 10 AND e.type = 'Meeting')",
+    "predicted_answer": [
+      [
+        4
+      ]
+    ],
+    "gold_sql": "SELECT T1.event_name FROM event AS T1  INNER JOIN attendance AS T2 ON T1.event_id = T2.link_to_event GROUP BY T1.event_id  HAVING COUNT(T2.link_to_event) > 10 EXCEPT SELECT T1.event_name  FROM event AS T1  WHERE T1.type = 'Meeting'",
+    "gold_answer": [
+      [
+        "Community Theater"
+      ],
+      [
+        "Food Bank"
+      ],
+      [
+        "Football game"
+      ],
+      [
+        "Laugh Out Loud"
+      ],
+      [
+        "November Speaker"
+      ],
+      [
+        "October Speaker"
+      ],
+      [
+        "Registration"
+      ],
+      [
+        "September Speaker"
+      ],
+      [
+        "Women's Soccer"
+      ]
+    ],
+    "correct": false,
+    "error": null,
+    "latency_seconds": 16.6215,
+    "llm_calls": 2,
+    "model": "azure/seminar-gpt-5.4-mini",
+    "prompt_tokens": 5490,
+    "completion_tokens": 2693,
+    "reasoning_tokens": 2307,
+    "termination": "final"
+  }
+]
