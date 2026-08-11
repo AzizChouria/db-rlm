@@ -178,6 +178,7 @@ def run_one(example: dict, database_dir: Path, agent: InDomainFewShotDBRLM,
     agent._prompt_tokens = 0
     agent._completion_tokens = 0
     agent._reasoning_tokens = 0
+    agent._reasoning_traces = []
     agent._transcript = None
     predicted_sql = ""
     termination = "error"
@@ -241,7 +242,8 @@ def save_transcript(example: dict, agent, transcript_dir) -> None:
         return
     Path(transcript_dir).mkdir(parents=True, exist_ok=True)
     rec = {"id": example["id"], "db_id": example["db_id"],
-           "question": example["question"], "messages": transcript}
+           "question": example["question"], "messages": transcript,
+           "reasoning_traces": getattr(agent, "_reasoning_traces", [])}
     with open(Path(transcript_dir) / "transcripts.jsonl", "a") as f:
         f.write(json.dumps(rec, default=str) + "\n")
 

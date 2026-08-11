@@ -71,6 +71,7 @@ class RLM:
         self._completion_tokens = 0
         self._reasoning_tokens = 0
         self._iterations = 0
+        self._reasoning_traces: list = []
 
     def complete(
         self,
@@ -226,24 +227,46 @@ class RLM:
         if self.api_key:
             call_kwargs['api_key'] = self.api_key
 
+        # Responses API exposes reasoning summaries; Chat Completions never does.
+        # reasoning_effort (a Chat-Completions-style kwarg) becomes reasoning={"effort", "summary"}.
+        reasoning_effort = call_kwargs.pop("reasoning_effort", None)
+        reasoning_param = {"summary": "auto"}
+        if reasoning_effort:
+            reasoning_param["effort"] = reasoning_effort
+        call_kwargs["reasoning"] = reasoning_param
+
         # Call LiteLLM (60s hard timeout at both litellm and asyncio level)
         call_kwargs.setdefault("timeout", 60)
         import asyncio as _asyncio
         response = await _asyncio.wait_for(
-            litellm.acompletion(model=model, messages=messages, **call_kwargs),
+            litellm.aresponses(model=model, input=messages, **call_kwargs),
             timeout=60,
         )
 
         # Token accounting (reset per question by the runner)
         usage = getattr(response, "usage", None)
         if usage is not None:
-            self._prompt_tokens += getattr(usage, "prompt_tokens", 0) or 0
-            self._completion_tokens += getattr(usage, "completion_tokens", 0) or 0
-            details = getattr(usage, "completion_tokens_details", None)
+            self._prompt_tokens += getattr(usage, "input_tokens", 0) or 0
+            self._completion_tokens += getattr(usage, "output_tokens", 0) or 0
+            details = getattr(usage, "output_tokens_details", None)
             self._reasoning_tokens += getattr(details, "reasoning_tokens", 0) or 0
 
-        # Extract text
-        return response.choices[0].message.content
+        # Capture the reasoning summary text (if any) for later trace analysis
+        for item in getattr(response, "output", None) or []:
+            if getattr(item, "type", None) == "reasoning":
+                summary_items = getattr(item, "summary", None) or []
+                summary_text = "\n".join(
+                    getattr(s, "text", "") for s in summary_items if getattr(s, "text", "")
+                )
+                if summary_text:
+                    self._reasoning_traces.append({
+                        "iteration": self._iterations,
+                        "llm_call": self._llm_calls,
+                        "text": summary_text,
+                    })
+
+        # Extract final answer text
+        return response.output_text
 
     def _build_repl_env(self, query: str, context: str) -> Dict[str, Any]:
         """

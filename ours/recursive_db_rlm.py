@@ -105,9 +105,11 @@ RULES:
   • When the Hint spells out a formula (DIVIDE(...), SUBTRACT(...), MULTIPLY(...), "X = A / B"),
     translate it into SQL LITERALLY, term by term — do not substitute your own formula,
     denominator, or filter, even if yours seems more correct.
-  • When a question asks for a LIST of things, add DISTINCT.
-  • When computing AVG/SUM/COUNT over a joined table, be careful about duplicates.
-    Use subqueries or DISTINCT to avoid counting the same row multiple times.
+  • DO NOT deduplicate by default. Do not add DISTINCT, and do not worry about a
+    JOIN producing duplicate/repeated rows for COUNT/SUM/AVG — use the raw join
+    result as-is. Gold answers are computed this way (COUNT/SUM/AVG over the
+    natural join cardinality, including repeats) unless the Hint explicitly says
+    "distinct" or "unique". Only add DISTINCT when the Hint or question says so.
   • For conditional aggregation use: SUM(CASE WHEN condition THEN 1 ELSE 0 END)
     or IIF(condition, value, 0) — both work in SQLite.
   • For ratios/percentages: CAST(numerator AS REAL) / denominator * 100
