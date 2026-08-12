@@ -6,6 +6,12 @@ Injected into the prompt for the 3 databases with lowest accuracy:
 These hints tell the model about common join keys, column name quirks,
 and value formats specific to each database — things that aren't obvious
 from the schema alone and cause repeated failures.
+
+DISABLED BY DEFAULT as of 2026-08-12. Ablation on the 112 questions across
+these 3 databases showed a net-zero effect (58/112 both with and without —
+helps on 2 DBs, hurts on the third, cancels out), while being tuned against
+this exact benchmark's databases and not generalizing to any other DB. Kept
+here, opt-in via ENABLE_DB_HINTS=1, for reproducing pre-2026-08-12 numbers.
 """
 
 DB_HINTS: dict[str, str] = {
@@ -34,5 +40,12 @@ DB_HINTS: dict[str, str] = {
 
 
 def get_db_hint(db_id: str) -> str:
-    """Return structural hint string for a database, or '' if none defined."""
+    """Return structural hint string for a database, or '' if none defined.
+
+    Off by default (see module docstring). Set ENABLE_DB_HINTS=1 to restore
+    the old per-database hint injection for comparison against past runs.
+    """
+    import os
+    if not os.environ.get("ENABLE_DB_HINTS"):
+        return ""
     return DB_HINTS.get(db_id, "")
