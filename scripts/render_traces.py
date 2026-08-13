@@ -30,6 +30,14 @@ def render_question(rec: dict, res: dict) -> str:
              f"[{esc(res.get('db_id','?'))} / {esc(res.get('difficulty','?'))}] {badge} "
              f"— {esc(res.get('question','')[:110])}</summary>"]
     parts.append("<div style='margin:0.5em 1em; padding:0.5em; border-left:3px solid #999'>")
+    traces = rec.get("reasoning_traces", [])
+    if traces:
+        parts.append(f"<details open><summary><b>🧠 reasoning trace ({len(traces)} steps)</b></summary>")
+        for t in traces:
+            parts.append(f"<div style='margin:0.3em 0 0.8em 0.5em;padding:0.4em;background:#fffbe6;"
+                         f"border-left:3px solid #e0c000'><i>iteration {t.get('iteration')}</i>"
+                         f"<pre style='white-space:pre-wrap;font-family:inherit'>{esc(t.get('text',''))}</pre></div>")
+        parts.append("</details>")
     msgs = rec.get("messages", [])
     for i, m in enumerate(msgs):
         role = m.get("role")

@@ -235,12 +235,14 @@ class RLM:
             reasoning_param["effort"] = reasoning_effort
         call_kwargs["reasoning"] = reasoning_param
 
-        # Call LiteLLM (60s hard timeout at both litellm and asyncio level)
-        call_kwargs.setdefault("timeout", 60)
+        # Call LiteLLM (240s hard timeout at both litellm and asyncio level;
+        # was 60s then 120s, still saw 17/500 (3.4%) time out at 120s on
+        # reasoning_effort=high with a large accumulated conversation)
+        call_kwargs.setdefault("timeout", 240)
         import asyncio as _asyncio
         response = await _asyncio.wait_for(
             litellm.aresponses(model=model, input=messages, **call_kwargs),
-            timeout=60,
+            timeout=240,
         )
 
         # Token accounting (reset per question by the runner)
