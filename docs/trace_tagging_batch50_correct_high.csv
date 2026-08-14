@@ -1,0 +1,38 @@
+id,db_id,difficulty,step_sequence,notable_pattern,notes
+bird_1471,debit_card_specializing,simple,UNDERSTAND->DRAFT->TEST->FINALIZE,,short/clean; only seen via early smoke test not full formal tagging
+bird_1473,debit_card_specializing,moderate,UNDERSTAND->EXPLORE(real,samples values)->DRAFT->[workflow/timing confusion]->TEST(iter2)->FINALIZE,tool-uncertainty,genuinely uses db.sample_values before drafting
+bird_1476,debit_card_specializing,moderate,UNDERSTAND->DRAFT->TEST->FINALIZE,,short/clean; only seen via early smoke test not full formal tagging
+bird_1479,debit_card_specializing,moderate,UNDERSTAND->EXPLORE(intent)->TEST(2nd turn,confident)->FINALIZE,,paired with low-effort version which showed tool-doubt; high effort clean
+bird_1480,debit_card_specializing,moderate,UNDERSTAND->EXPLORE(intent)->DRAFT->TEST(2nd turn)->FINALIZE,,paired with low-effort version which showed tool-doubt; high effort clean
+bird_1483,debit_card_specializing,simple,UNDERSTAND->EXPLORE(intent)->DRAFT->FINALIZE,,clean
+bird_1484,debit_card_specializing,challenging,UNDERSTAND->EXPLORE(intent)->DRAFT->[uncertain,guesses at values]->REFINE->FINALIZE,memorization (Kaggle mention),mentions "gas stations dataset from Kaggle" - possible training-data recall
+bird_1493,debit_card_specializing,simple,UNDERSTAND->EXPLORE(intent)->DRAFT->[edge-case worry: 0 rows/NULL]->TEST(2nd turn)->FINALIZE,,careful about COUNT vs SUM NULL handling
+bird_1317,student_club,moderate,UNDERSTAND->EXPLORE(checks sample values/casing)->DRAFT->TEST->FINALIZE,HIGH-WINS flip case (vs low),low effort failed same question via unescaped apostrophe; high explicitly checked casing/escaping first
+bird_1501,debit_card_specializing,challenging,UNDERSTAND->EXPLORE->DRAFT->TEST->[stuck,iterates 6x]->EXPLORE deeper->FINALIZE,HIGH-WINS flip case (vs low),needed non-obvious join through yearmonth as proxy for missing 2013 data; low gave up
+bird_1500,debit_card_specializing,moderate,UNDERSTAND->EXPLORE(extensive)->DRAFT->TEST->[hits anomaly]->EXPLORE deeper->REFINE->FINALIZE,longest trace (18 blocks/5 turns),same question also very long under low effort - length tracks real data difficulty not effort setting
+bird_1505,debit_card_specializing,simple,UNDERSTAND->DRAFT->[uncertain distinct vs raw]->TEST(2nd turn)->FINALIZE,,
+bird_1506,debit_card_specializing,moderate,UNDERSTAND->DRAFT->TEST->[mild tool-timing confusion]->FINALIZE,tool-uncertainty (mild),
+bird_1507,debit_card_specializing,simple,UNDERSTAND->[tool output visibility uncertainty]->DRAFT->TEST(2nd turn)->FINALIZE,tool-uncertainty,
+bird_1509,debit_card_specializing,simple,UNDERSTAND->EXPLORE(intent)->[extended tool-execution-timing confusion]->DRAFT->[more confusion]->FINALIZE,tool-uncertainty (strong),
+bird_1514,debit_card_specializing,simple,UNDERSTAND->DRAFT(states tool intent)->FINALIZE,,clean
+bird_1515,debit_card_specializing,simple,UNDERSTAND->EXPLORE(intent)->DRAFT->[tool-uncertainty]->TEST->FINALIZE,tool-uncertainty (strong: "bypass tool workflow, cautious guess"),
+bird_1521,debit_card_specializing,moderate,UNDERSTAND->EXPLORE(intent)->DRAFT->[tool-uncertainty]->TEST->FINALIZE,tool-uncertainty,
+bird_1528,debit_card_specializing,moderate,UNDERSTAND->EXPLORE(intent)->DRAFT->[tool-uncertainty]->TEST->FINALIZE,tool-uncertainty,
+bird_1533,debit_card_specializing,moderate,UNDERSTAND->[confirms dedup rule explicitly]->DRAFT->[tool-uncertainty]->FINALIZE,dedup-fix confirmation,explicitly reasons through "don't dedupe" rule correctly
+bird_1312,student_club,simple,FINALIZE (no reasoning trace captured),trivial/zero-trace,simplest possible case - single lookup, no visible deliberation
+bird_1323,student_club,moderate,UNDERSTAND->DRAFT->[tool-uncertainty]->EXPLORE(samples event.type)->REFINE->FINALIZE,tool-uncertainty,8 blocks/4 turns
+bird_1331,student_club,simple,UNDERSTAND->EXPLORE(intent)->DRAFT->[tool-uncertainty]->TEST->FINALIZE,,
+bird_1334,student_club,moderate,UNDERSTAND->EXPLORE(intent)->DRAFT->[tool-uncertainty]->TEST->FINALIZE,,9 blocks/4 turns - genuine ambiguity (Illinois full name vs abbreviation)
+bird_1339,student_club,moderate,UNDERSTAND->EXPLORE(intent)->DRAFT->[tool-uncertainty]->TEST->FINALIZE,,
+bird_1340,student_club,moderate,UNDERSTAND->DRAFT->[tool-uncertainty]->FINALIZE,,
+bird_1344,student_club,simple,UNDERSTAND->DRAFT->[fabricates specific plausible fake value]->FINALIZE,fabrication (stronger than tool-uncertainty),invented "Fundraising for T-shirts" mid-reasoning before seeing real data; harmless here since output is SQL not literal text
+bird_1346,student_club,simple,FINALIZE (no reasoning trace captured),trivial/zero-trace,
+bird_1350,student_club,moderate,UNDERSTAND->EXPLORE->DRAFT->TEST->[0 rows,real feedback]->REFINE(fixes date format)->FINALIZE,working TEST-REFINE cycle,good example of harness working as intended - real trial and error
+bird_1351,student_club,simple,UNDERSTAND->DRAFT->TEST->FINALIZE,,
+bird_1352,student_club,simple,UNDERSTAND->DRAFT->TEST->FINALIZE,,
+bird_1356,student_club,simple,UNDERSTAND->DRAFT->[tool-uncertainty]->TEST->FINALIZE,,
+bird_1357,student_club,simple,UNDERSTAND->DRAFT->[tool-uncertainty]->TEST->FINALIZE,,
+bird_1359,student_club,moderate,UNDERSTAND->DRAFT->[tool-uncertainty]->TEST->FINALIZE,,correctly interpreted "how many times more" as ratio not count
+bird_1361,student_club,simple,UNDERSTAND->DRAFT->FINALIZE,,trivial
+bird_1362,student_club,simple,UNDERSTAND->EXPLORE(recalls real-world Orange County VA cities from memory)->DRAFT->FINALIZE,memorization (strong),explicit real-world geographic recall; still verified against actual DB before finalizing
+bird_1368,student_club,simple,UNDERSTAND->[extensive tool-execution-timing confusion, 4 blocks]->DRAFT->FINALIZE,tool-uncertainty (strongest instance),most elaborate meta-uncertainty about synchronous vs async execution
