@@ -7,4 +7,14 @@ data/raw/
 data/megadb/
 transcripts/*/transcripts.jsonl
 transcripts/*/traces_report*.html
+!transcripts/hanyan_still_failing_traced/transcripts.jsonl
+!transcripts/hanyan_still_failing_traced/traces_report*.html
+!transcripts/aziz_failures_79_high_fair/transcripts.jsonl
+!transcripts/aziz_failures_79_high_fair/traces_report*.html
+!transcripts/reasoning_trace_batch50/transcripts.jsonl
+!transcripts/reasoning_trace_batch50/traces_report*.html
+!transcripts/reasoning_trace_batch50_low/transcripts.jsonl
+!transcripts/reasoning_trace_batch50_low/traces_report*.html
+!transcripts/new_failures_19_traced/transcripts.jsonl
+!transcripts/new_failures_19_traced/traces_report*.html
 .~lock.*#
