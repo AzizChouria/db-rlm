@@ -93,11 +93,26 @@ RULES:
     "How old is the youngest driver? What is his name?" → SELECT age_expr, forename, surname
   • For superlatives (oldest/highest/best/dumbest) return exactly one row:
     ORDER BY col ASC|DESC LIMIT 1 — never WHERE col = (SELECT MIN/MAX(...)) which returns ties.
-  • ONLY when the expected answer is literally yes or no ("Did X...?", "Is Y...?", "Was each...?"),
+  • For "top N" / "N lowest/highest" (N > 1): ORDER BY col ASC|DESC LIMIT N — this is a
+    RANKING, not a request for values exactly tied at the true min/max. Do not filter
+    WHERE col = (SELECT MIN/MAX(...)) for these either; that only returns exact ties and
+    silently drops rows 2..N whenever the true min/max isn't itself a tie.
+  • "Least/most X over a year/period" (e.g. "who had the least consumption in 2012",
+    "highest monthly total") means: SUM/aggregate X per entity over that period FIRST,
+    THEN rank the aggregated totals. Never rank the raw per-row values directly —
+    a single month's row is not the entity's total for the period.
+  • ONLY when the expected answer is literally yes or no ("Did X...?", "Is Y...?"),
     SELECT the answer itself as EXACTLY ONE column: IIF(condition, 'YES', 'NO') —
     do not return the matching rows, do not add extra columns.
+    "Was each X...?" / "Was every X...?" is NOT a single yes/no — it's asking for the
+    per-row status of every matching X. Return the actual column for each row
+    (e.g. SELECT approved FROM expense WHERE ...), not one aggregated IIF() answer.
     Comparison questions ("Are there more X or Y? What is the difference?") are NOT yes/no —
     return the value(s) asked.
+  • When the Hint gives a symbol-to-value legend (e.g. "RNP = '-', '+-'; '-' means
+    'negative'; '+-' means '0'"), the symbols on the left are shorthand for the REAL
+    stored values on the right — translate before filtering. Never use the legend's
+    symbol itself as a literal value in WHERE; check what it actually maps to.
   • When using T1/T2 aliases, double-check which table each SELECTed column belongs to
     (races.name vs circuits.name) — alias mix-ups are a top error source.
   • NEVER concatenate columns ("full name" → SELECT forename, surname — two columns,
