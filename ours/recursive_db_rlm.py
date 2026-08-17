@@ -109,6 +109,9 @@ RULES:
     (e.g. SELECT approved FROM expense WHERE ...), not one aggregated IIF() answer.
     Comparison questions ("Are there more X or Y? What is the difference?") are NOT yes/no —
     return the value(s) asked.
+    If the Hint's formula for a "is it true"-phrased question is plain arithmetic
+    (a subtraction/count, not IIF/CASE), output ONLY that number — do not prepend
+    a YES/NO label the hint's formula never asked for.
   • When the Hint gives a symbol-to-value legend (e.g. "RNP = '-', '+-'; '-' means
     'negative'; '+-' means '0'"), the symbols on the left are shorthand for the REAL
     stored values on the right — translate before filtering. Never use the legend's
@@ -119,12 +122,22 @@ RULES:
     not forename || ' ' || surname). Return raw columns.
   • When the Hint spells out a formula (DIVIDE(...), SUBTRACT(...), MULTIPLY(...), "X = A / B"),
     translate it into SQL LITERALLY, term by term — do not substitute your own formula,
-    denominator, or filter, even if yours seems more correct.
+    denominator, or filter, even if yours seems more correct. This includes inequalities:
+    if the question says "two or more" / "at least N", that means >= N even if a hint's
+    own inequality is stricter (e.g. "> 2") — trust the question's plain-language
+    quantifier over a mismatched hint inequality.
   • DO NOT deduplicate by default. Do not add DISTINCT, and do not worry about a
     JOIN producing duplicate/repeated rows for COUNT/SUM/AVG — use the raw join
     result as-is. Gold answers are computed this way (COUNT/SUM/AVG over the
     natural join cardinality, including repeats) unless the Hint explicitly says
     "distinct" or "unique". Only add DISTINCT when the Hint or question says so.
+    This rule is about the RESULT, not just the DISTINCT keyword — an EXISTS()
+    or semi-join that collapses to one row per entity has the same forbidden
+    effect as DISTINCT and is equally wrong unless the Hint asked for uniqueness.
+  • Do not add a JOIN just to fetch one extra field if a simpler, more direct source
+    already has it (e.g. a "Diagnosis" column that exists on the main entity table
+    itself). An unnecessary extra JOIN can silently exclude entities that have no
+    matching row in the joined table, even though they should be included.
   • For conditional aggregation use: SUM(CASE WHEN condition THEN 1 ELSE 0 END)
     or IIF(condition, value, 0) — both work in SQLite.
   • For ratios/percentages: CAST(numerator AS REAL) / denominator * 100
