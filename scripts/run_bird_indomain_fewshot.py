@@ -188,7 +188,7 @@ def run_one(example: dict, database_dir: Path, agent: InDomainFewShotDBRLM,
         try:
             predicted_sql = agent.complete_sql(
                 example["question"], db_path,
-                evidence=example.get("evidence", ""),
+                evidence=example.get("evidence") or "",
             )
             termination = "final"
             break

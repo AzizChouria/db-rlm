@@ -1,0 +1,631 @@
+FINAL PRESENTATION — SPEAKING SCRIPT (Aziz, first 10 minutes)
+Slide numbers match the compiled TUM deck.
+
+
+=============================================================
+SLIDE 1 — TITLE  (~15s)
+=============================================================
+
+"We're Aziz and Hanyan, and this is our project on DB-RLM — extending
+Recursive Language Models to Text-to-SQL. I'll cover the foundation and a
+few core findings, then Hanyan will take over with the extended pipeline."
+
+
+=============================================================
+SLIDE 3 — WHY TEXT-TO-SQL IS HARD  (~50)
+=============================================================
+
+"Text-to-SQL is a good setting to study reasoning because the answer is
+verifiable — you run the query and check the rows.
+
+But failures happen at four different layers. A query can pick the wrong
+table. It can execute fine but count rows when it should count entities.
+It can filter on a value that simply isn't in the database in that form.
+And it can compute exactly the right thing and still be marked wrong
+because the benchmark expected two columns instead of one.
+
+The third one — execution grounding — motivates everything I'll show next:
+a query can be perfectly valid and still wrong, because the model doesn't
+know what's actually stored in the database."
+
+
+=============================================================
+SLIDE 4 — STATE OF THE ART: RECURSIVE LANGUAGE MODELS  (~50s)
+=============================================================
+
+"The framework we build on is Recursive Language Models, from MIT. The
+idea: instead of stuffing everything into the context window and asking the
+model to answer from what it read, treat the data as an external
+environment the model can query with code. On text, that means writing a
+script instead of reading six hundred thousand characters.
+
+RLM defines three mechanisms — programmatic exploration, an executable
+environment, and self-improvement plus divide-and-conquer.
+
+Our project asks what happens when that external environment is a live SQL
+database. And a big part of our result  is that
+these three mechanisms do NOT pay off equally."
+
+
+=============================================================
+SLIDE 5 — RESEARCH QUESTIONS & EXPERIMENTAL SETUP  (~50s)
+=============================================================
+
+"Three questions. How much can we improve a frozen model by changing only
+what it can do at inference time. Which mechanisms actually cause the gain.
+And what's blocking further improvement.
+
+The constraints are part of the research question. We never swap the model,
+never fine-tune it. Gold answers are used only to grade after a run and to
+diagnose failures afterward — never inside the loop.
+
+##That rule matters. Early in the project we found our own few-shot retriever
+was pulling a question's own gold answer back in as an example. We caught
+it, disclosed it, and rebuilt the retriever to draw only from the training
+split. Every number after that point is clean.
+
+What we ARE allowed to change: the tools, the environment, precomputed
+knowledge, and post-processing — as long as each can be switched off and
+measured separately."
+
+  [CUT IF RUNNING LONG: drop the leakage anecdote, saves ~20s]
+
+
+=============================================================
+SLIDE 7 — DB-RLM ARCHITECTURE  (~85s)
+=============================================================
+
+"This is the complete system. The root agent works inside a persistent
+Python environment — it can execute SQL against the live database, sample
+the values actually stored in a column, see errors or empty results, and
+revise before it commits. That revise loop is the core mechanism.
+
+It has two tools. Execute a query and see the real result. Or sample real
+stored values before filtering on them — that second one matters more than
+it sounds, and I'll show you why on the next slide.
+
+##The three dashed boxes — schema retrieval before the agent, an optional
+sub-agent, and post-processing after — are the layers Hanyan covers in the
+second half. I'm covering the core loop."
+
+
+=============================================================
+SLIDE 8 — ARCHITECTURE AS EXPERIMENTAL DESIGN  (~60s)
+=============================================================
+
+"The architecture is also the experimental design. Rather than comparing a
+simple baseline against one big agent and reporting a single number, we add
+exactly one capability at a time. That means the final score decomposes —
+we can say how much each mechanism actually contributed, instead of just
+that the whole thing works.
+
+##I'll cover layers zero and one — the baseline and the tool loop. Hanyan
+covers layers two through four. I also have two studies that sit outside
+this chain: a negative control, where naive schema pruning made things
+worse, and a reasoning-effort sweep."
+
+
+=============================================================
+SLIDE 10 — USE CASE: FROM HINT TO CORRECT FILTER  (~75s)
+=============================================================
+
+"Here's one real question, start to finish. It asks for patients with a
+'normal' level of a lab marker, and the hint gives a legend: the symbol
+minus means negative.
+
+A model working blind from the schema uses that symbol literally as the
+database filter — and gets zero rows, silently, because that symbol never
+actually appears in the real column. It's not an error. It's just wrong,
+and quiet.
+
+With live access, the model can sample the actual column, see the stored
+values don't match the symbol, and translate the hint correctly before
+finalizing. This exact pattern caused multiple failures in our benchmark —
+all fixed the same way, once the model could actually check."
+
+
+=============================================================
+SLIDE 12 — ABLATION RESULTS  (~95s)
+=============================================================
+
+"So how much does this buy? Baseline 1: schema and question, one shot, no
+tools — 55.2%.
+
+Baseline 2 tries to help by pre-filtering which tables the model sees — and
+it actually HURTS, down to 51.6%, because the filter removes tables the
+query genuinely needed. That's a useful negative result on its own: naive
+schema-shrinking isn't automatically good.
+
+Giving the model the tool loop jumps accuracy to 64.2% — a 12.6-point gain,
+with zero change to the model itself.
+
+The last step adds another 6 points, to 70.2% — and to be precise, that's
+three changes together: high reasoning effort, our deduplication-convention
+fix, and removing per-database hints. Reasoning effort on its own accounts
+for about 2.2 of those 6 points, which is the next slide.
+
+And the per-difficulty breakdown shows WHERE the tool loop pays off: plus
+5.4 points on simple questions, but plus 11.7 on challenging ones. Live
+verification helps most where it's needed most."
+  [CUT IF RUNNING LONG: skip narrating the difficulty rows, saves ~25s]
+
+
+=============================================================
+SLIDE 13 — REASONING EFFORT: ACCURACY VS. COST  (~70s)
+=============================================================
+
+"One clean controlled experiment — same system, same data, only the
+reasoning budget changes. High effort buys 2.2 points, for nearly fourteen
+times the reasoning tokens and five times the latency per question.It's a steep trade-off.
+
+Interestingly, the gain sits entirely in the 'moderate' tier.plus 6.4 points. Simple questions
+actually get slightly worse with more reasoning, and challenging ones
+barely move.
+
+So more thinking helps when a question needs a non-obvious workaround the
+model can find. But on easy questions, it mostly gives the model room to
+talk itself out of an answer it already had right."
+
+  [CUT IF RUNNING LONG: drop the last sentence, saves ~15s]
+
+
+=============================================================
+SLIDE 14 — A BENCHMARK-IMPOSED CEILING  (~90s)
+=============================================================
+
+##"This is the result I'd lead with if I only had one slide.
+
+We ran our exact same system on an independently corrected version of the benchmark. Accuracy jumped over 15 points, from 70% to 85.5%.
+
+Because the original benchmark is heavily flawed. Of 498 questions, over 200 gold queries were revised. In our own audit of 64 failures, almost half were benchmark defects
+
+A text column sorted as if
+it were a number, so ninety-three thousand ranked ABOVE a hundred and
+seventy-seven thousand. A missing parenthesis that silently changed which
+rows qualified. A hint whose formula didn't compute what it claimed.
+
+The ceiling on this task is currently imposed by the benchmark, not the model."
+
+
+=============================================================
+SLIDE 16 — MODEL SCALE COMPARISON  (~60s)
+=============================================================
+
+"One last check: what if we just used the bigger model instead of improving
+the system? Real gain, but modest — under one point at high reasoning
+effort, 3.6 points at low.
+
+Compare that to nine points from the tool loop, or fifteen from correcting
+the benchmark. On this benchmark, the accuracy wasn't hiding in model
+scale."
+
+
+=============================================================
+HANDOFF TO HANYAN  (~10s)
+=============================================================
+
+"That's the foundation — the tool loop beats model scale, and the benchmark
+itself imposes a real ceiling. Hanyan will now show how much further that
+foundation goes once you add the remaining three layers."
+
+
+=============================================================
+=============================================================
+LIKELY Q&A — PREPARED ANSWERS
+=============================================================
+
+Q: "Is the +6.0 from reasoning effort alone?"
+A: No. That step bundles reasoning effort with other prompt fixes made in
+   the same cycle. Isolated, reasoning effort is +2.2 points — 68.0 to
+   70.2.
+
+Q: "Why is your baseline 55% but the second half starts at 70%?"
+A: Same baseline, different benchmark version. One-shot generation scores
+   55.2% on the original BIRD gold and about 70% on the corrected version.
+   That 15-point gap is the ceiling effect on slide 14.
+
+Q: "How do you know these differences aren't noise?"
+A: We measured it — 20 questions run twice under identical settings, one
+   flipped. A 5% flip rate. Differences under about two points on a single
+   run shouldn't be treated as reliable.
+
+Q: "Isn't 48% of failures being benchmark defects a very strong claim?"
+A: It's 48% of the 64 failures I classified in detail, not of all questions
+   — and a failure-only audit can only see cases where a bad reference hurt
+   us, never cases where it accidentally helped. Hanyan shows the
+   full-dataset picture, which is more nuanced.
+
+Q: "Does SQL even use recursion? Why would recursive delegation help?"
+A: Mostly it doesn't — BIRD questions rarely need WITH RECURSIVE. Agent
+   recursion is different: the model pausing to spawn a helper for a
+   sub-problem. We found no stable benefit, and the likely reason is that
+   BIRD's sub-steps are small enough to do inline rather than delegate.
+
+
+=============================================================
+TIMING
+=============================================================
+
+Total spoken: ~12:50, plus section-divider slides.
+This is OVER the 10-minute half.
+
+To land at 10 min: take the three [CUT IF RUNNING LONG] markers above
+(saves ~60s), or agree an 11/9 split with Hanyan — this half carries the
+architecture and experimental-design slides that serve both halves.
+
+Do one timed read-through out loud before tomorrow.
+
+
+
+Yes. I went back to the **latest deck and your current script**, so this version follows the actual slides through 16, not the older version. I also tightened the scientific claims and made the wording more natural. Your current section contains the problem framing, RLM background, setup, DB-RLM architecture, use case, ablation, reasoning-cost study, benchmark correction, and model-scale comparison.  
+
+I would aim for **about 9:30 to 10:00**, rather than trying to fill every slide with a long speech.
+
+# Final speaking script
+
+## Slide 1 | Title | ~15s
+
+> “Hi everyone. We’re Aziz and Hanyan, and this is our project on DB-RLM for Text-to-SQL.
+>
+> I’ll first explain the problem, the RLM idea, and the core DB-RLM system. Then I’ll show you a concrete example and the main results before Hanyan takes over.”
+
+---
+
+## Slide 2 | Contents | ~5s
+
+You do not need to explain the contents.
+
+> “I’ll start with the problem and the system, then move to the experiments and the main findings.”
+
+---
+
+# Slide 3 | Why Text-to-SQL Is Hard | ~50s
+
+> “Text-to-SQL is interesting because the answer is actually verifiable. We can execute the generated SQL and check what comes back.
+>
+> But there are several different ways a model can fail.
+>
+> First, it can choose the wrong table or the wrong join path.
+>
+> Second, it can misunderstand the logic of the question, for example the required aggregation or the level we're counting at.
+>
+> Third, it can make assumptions about the data itself. The SQL can be completely valid, but the values the model uses may not exist in the database.
+>
+> And finally, even when the query is logically correct, it can still fail because the output does not match the benchmark's expected format.
+>
+> For us, the third point is especially important. A model can write valid SQL and still be wrong because it cannot see what is actually stored in the database.”
+
+This follows the four failure layers shown on the current slide. 
+
+---
+
+# Slide 4 | State of the Art: Recursive Language Models | ~50s
+
+> “The idea we build on is Recursive Language Models, or RLM.
+>
+> The main difference from a standard in-context approach is that you don't have to put all the data into the model's context and ask it to reason over everything directly.
+>
+> Instead, the model can use code to interact with the data as an external environment.
+>
+> The original framework has three main ideas: programmatic exploration, an executable environment with feedback, and recursive delegation for sub-problems.
+>
+> Our question is what happens when that external environment is not just a text blob, but a live SQL database.
+>
+> And one thing we found is that the different parts of the framework do not all contribute equally.”
+
+That matches the current RLM slide, including the three mechanisms and your SQL adaptation. 
+
+---
+
+# Slide 5 | Research Questions & Experimental Setup | ~50s
+
+> “We had three main questions.
+>
+> First, how much can we improve a small model just by changing what it can do at inference time?
+>
+> Second, which parts of the system are actually responsible for the improvement?
+>
+> And third, what still limits performance after we add these capabilities?
+>
+> To make that comparison meaningful, we keep the generator fixed at gpt-5.4-mini. There is no fine-tuning and we don't switch models between the main experiments.
+>
+> Gold answers are only used after the run for scoring and diagnosis. They are not available inside the generation loop.
+>
+> The basic idea is simple: keep the task and model fixed, and change the system around the model.”
+
+The current slide explicitly defines the three research questions, frozen generator, no leakage, and the controlled experimental design. 
+
+### Don't give the leakage story unless asked.
+
+That story is useful for Q&A, but it costs you too much time.
+
+---
+
+# Slide 6 | Section Divider
+
+No real explanation needed.
+
+> “So let me show you what that system actually looks like.”
+
+---
+
+# Slide 7 | DB-RLM Architecture | ~75s
+
+> “This is the core DB-RLM system.
+>
+> The agent starts with the question and the available schema information, then works inside a persistent Python environment.
+>
+> The important part is that it can interact with the real database instead of only reasoning from the schema.
+>
+> There are two main tools.
+>
+> The first is `db.execute`, which lets the model run a query and inspect the actual result.
+>
+> The second is `db.sample_values`, which lets it check the values actually stored in a column before it builds a filter.
+>
+> After execution, the model gets feedback. If the query fails or returns an empty result, it can revise the SQL and try again.
+>
+> That's really the core of the system: generate, execute, observe, and revise.
+>
+> There are also additional layers around this core loop, such as schema retrieval and post-processing, but the main mechanism I'm focusing on here is the database interaction loop.”
+
+The current architecture shows the two tools, the database observation step, the revise loop, and the guardrails. 
+
+---
+
+# Slide 8 | Architecture as Experimental Design | ~50s
+
+> “This architecture is also how we structure the experiment.
+>
+> Instead of building one big system and only looking at the final score, we add capabilities step by step.
+>
+> We start with one-shot SQL generation.
+>
+> Then we add the executable tool loop.
+>
+> After that we add schema retrieval, output post-processing, and finally depth-1 recursion.
+>
+> This lets us measure what each addition actually changes.
+>
+> We also ran two studies separately from this chain: a negative control for naive schema pruning, and a separate reasoning-effort experiment.”
+
+This is exactly the role of the layer table in the current deck. 
+
+---
+
+# Slide 9 | Section Divider
+
+You can keep this very short:
+
+> “Now let me show you one concrete failure that the tool loop can fix.”
+
+---
+
+# Slide 10 | Use Case: From Hint to Correct Filter | ~65s
+
+> “Here is one real example.
+>
+> The question asks how many patients have a normal level of a particular lab marker and were admitted to the hospital.
+>
+> The hint gives symbolic values for the column. A model that cannot access the database may simply copy those symbols into the SQL filter.
+>
+> The resulting SQL is valid, but it returns zero rows because those symbols are not actually stored in the column.
+>
+> So there is no SQL error. The problem is the model's assumption about the data.
+>
+> With DB-RLM, the model can first check the column values. It sees what is really stored, interprets the hint using that information, and then builds the filter using the real values.
+>
+> So the tool is not just helping the model write SQL. It is helping the model check whether its assumptions about the database are true.”
+
+The current use case explicitly contrasts literal filtering with checking the stored column values first. 
+
+---
+
+# Slide 11 | Section Divider
+
+> “So, does this actually improve accuracy?”
+
+---
+
+# Slide 12 | Ablation Results | ~90s
+
+> “Now we can see what each change buys us.
+>
+> The first baseline is just the question and the schema, with no tools. That gives us 55.2%.
+>
+> We then tried a simple keyword-based table filter. Surprisingly, performance drops to 51.6%.
+>
+> The reason is that the filter can remove tables that the query actually needs. So reducing the schema is not automatically helpful.
+>
+> Then we add the DB-RLM tool loop, and accuracy jumps to 64.2%. That's a 12.6 point improvement without changing the generator model.
+>
+> The current pipeline reaches 70.2%. But this last step combines several changes, so we should not say that all six points come from reasoning effort alone.
+>
+> We isolated reasoning effort separately, and that experiment gives us a +2.2 point improvement.
+>
+> One other interesting result is in the difficulty breakdown. The tool loop gives a +5.4 point gain on simple questions, but +11.7 on challenging ones.
+>
+> So the database interaction helps more as the questions become harder.”
+
+The displayed results support the four configuration scores and the difficulty breakdown. 
+
+### This is important
+
+When you say the last step combines changes, you are being more accurate than the old script. Your own prepared material confirms that the +6.0 combines high reasoning, the deduplication-convention fix, and removing per-database hints. 
+
+---
+
+# Slide 13 | Reasoning Effort: Accuracy vs. Cost | ~60s
+
+> “Here we isolate reasoning effort.
+>
+> Everything else stays the same. Only the reasoning budget changes.
+>
+> Accuracy goes from 68.0% to 70.2%, so we gain 2.2 points.
+>
+> But the cost is much larger. Reasoning tokens increase by about 13.7 times, and latency goes from 13.4 seconds to 66.8 seconds per question.
+>
+> So this is a pretty expensive two-point improvement.
+>
+> The interesting part is where that improvement comes from. The moderate questions improve by 6.4 points, while the simple and challenging groups actually get slightly worse.
+>
+> So more reasoning is not automatically better. In this experiment, the benefit is concentrated in a particular type of question.”
+
+The current slide reports the 2.2 point gain, token and latency multipliers, and the difficulty breakdown. 
+
+### I would keep this sentence from your old script
+
+> “More thinking helps when a question needs a non-obvious workaround.”
+
+That's natural and easy to remember.
+
+I would **not** make the “talk itself out of a correct answer” line essential. It's funny and human, but cut it when you're short on time.
+
+---
+
+# Slide 14 | A Benchmark-Imposed Ceiling | ~85s
+
+> “This is probably the most surprising result in our part.
+>
+> We ran the same system again, but scored it against an independently corrected version of the benchmark.
+>
+> On the original BIRD gold, the system gets 70.2%.
+>
+> On the corrected gold, it gets 85.54%.
+>
+> That's a difference of more than 15 points without changing the model or the system.
+>
+> The corrected benchmark changed 215 gold queries, 147 questions, and 140 hints out of the 498-question set.
+>
+> We also looked more closely at the 64 failures we classified. Thirty-one of them were linked to problems in the benchmark's own gold SQL or evidence.
+>
+> We found examples like incorrect numeric ordering, missing parentheses that changed the query result, and hints whose formulas did not actually match the task.
+>
+> So the benchmark is clearly imposing a substantial limit on the score we observe.”
+
+The current benchmark slide gives the 498-question scope, the 215/147/140 corrections, the 70.20% to 85.54% change, and the 31/64 classified-failure result. 
+
+### Important change from your previous script
+
+Do **not** say:
+
+> “The ceiling on this task is currently imposed by the benchmark, not the model.”
+
+That's too absolute.
+
+Say:
+
+> “The benchmark is clearly imposing a substantial limit on the score we observe.”
+
+Much safer academically.
+
+Also always say **“31 of the 64 failures we classified”**, not simply “31 failures,” because that 48% comes from a failure-selected diagnostic set. Your own Q&A correctly recognizes that limitation. 
+
+---
+
+# Slide 15 | Section Divider
+
+No need to explain it.
+
+---
+
+# Slide 16 | Model Scale Comparison | ~55s
+
+> “One last comparison: what happens if we simply use a larger model?
+>
+> We keep the same system and the same configuration and replace gpt-5.4-mini with gpt-5.4.
+>
+> At high reasoning, the score goes from 70.2% to 71.0%. That's only a 0.8 point improvement.
+>
+> At low reasoning, the difference is larger, from 68.0% to 71.6%, or 3.6 points.
+>
+> So increasing model size does help in this setup, but the gain is much smaller than what we got from changing the system around the model.
+>
+> That is important for our original question. We were not simply getting the improvement by using a bigger model.”
+
+The current slide shows exactly these high- and low-reasoning comparisons. 
+
+---
+
+# Handoff to Hanyan | ~10s
+
+> “So far, we have seen that database interaction gives a substantial improvement, reasoning comes with a significant cost, and the benchmark itself has a large effect on the measured score.
+>
+> Hanyan will now go into the remaining layers and the failure analysis.”
+
+---
+
+# The 3 lines I would memorize
+
+You don't need to memorize the whole script word for word. These are the three ideas the examiner should remember from your part:
+
+### 1. The problem
+
+> **“A SQL query can be valid and still be wrong because the model does not know what is actually stored in the database.”**
+
+### 2. Your contribution
+
+> **“The DB-RLM loop lets the model execute, observe, and revise instead of relying only on the schema.”**
+
+### 3. Your main result
+
+> **“The tool loop gives a much larger gain than simply increasing model size, while the benchmark itself also has a very large effect on the measured accuracy.”**
+
+That gives your entire section a coherent message instead of making it sound like a sequence of disconnected experiments.
+
+And importantly, this version is more defensible than the old script: it does **not** overclaim what the +6 points means, it does **not** overclaim the 48% benchmark finding, and it does **not** claim that the benchmark is the only ceiling.
+
+
+Slide 12 — Ablation Results
+
+“So how much does this actually buy?
+
+Baseline 1 is just the question and the schema, one shot, with no tools. That gives us 55.2%.
+
+Baseline 2 adds a keyword-based table filter. Surprisingly, it actually hurts performance, dropping us to 51.6%, because the filter can remove tables that the query needs. So reducing the schema is not automatically helpful.
+
+When we give the model the tool loop, accuracy jumps to 64.2%. That's a 12.6 point gain without changing the model.
+
+The current pipeline reaches 70.2%. But this last 6 point increase comes from three changes together: higher reasoning effort, the deduplication-convention fix, and removing the per-database hints. So we should not attribute all 6 points to reasoning. When we isolate reasoning effort, the gain is 2.2 points, which I'll show on the next slide.
+
+And the accuracy comes with a cost. The one-shot baseline takes about 1.5 seconds per question. With the tool loop, we're at around 3.5 seconds. The final pipeline takes about 42 seconds.
+
+So going from the original baseline to the final pipeline gives us about 15 points of accuracy, but at roughly 28 times the latency.
+
+The other interesting result is where the tool loop helps. The gain is 5.4 points on simple questions, 10 points on moderate ones, and 11.7 points on challenging questions.
+
+So the tool loop helps most on the questions where verification is actually useful.”
+
+Why I prefer this version
+
+It makes the 15 points / 28× latency point very clear without sounding dramatic.
+
+Also, I would say “about 15 points”, not “fifteen points of accuracy costs...”, because you are comparing accuracy gain with latency increase, not literally assigning a monetary “cost” to accuracy.
+
+Your current results support the 55.2%, 51.6%, 64.2%, 70.2% progression and the difficulty gains.
+
+Slide 16 — Model Scale Comparison
+
+This one has a much more interesting story now. It is no longer simply:
+
+“larger model = +0.8%”
+
+The interesting result is:
+
+gpt-5.4 at low reasoning beats gpt-5.4-mini at high reasoning, while using much fewer reasoning tokens and less latency.
+
+So I would present it like this:
+
+“Last check: what happens if we skip the system changes and just use the larger model?
+
+Looking only at high reasoning, the gain is small. We go from 70.2% with gpt-5.4-mini to 71.0% with gpt-5.4. That's less than one point.
+
+But the more interesting comparison is the low-reasoning case. gpt-5.4 at low reasoning reaches 71.6%, which is actually higher than gpt-5.4-mini at high reasoning.
+
+And it does that with around 28 times fewer reasoning tokens and about a quarter of the latency.
+
+So the larger model is not giving us a huge accuracy jump here. What it gives us is better efficiency. It can reach this level of accuracy without needing such a large reasoning budget.
+
+Of course, this does not mean it's automatically cheaper. These are reasoning-token and latency comparisons. The larger model also has a higher price per token, and we did not calculate the actual monetary cost.
+
+So the practical takeaway from this experiment is that model scale can sometimes replace a large reasoning budget, even when the final accuracy difference is small.”
